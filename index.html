@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solo — Your Date Companion</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#c8a96e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Solo">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0e0e;--surface:#161616;--surface2:#1f1f1f;--border:#2a2a2a;--accent:#c8a96e;--accent2:#7eb8a4;--text:#f0ece4;--muted:#7a7570;--danger:#e07070;--green:#7eb8a4;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;padding-bottom:50px;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:0.4;}
+header{padding:24px 20px 0;display:flex;align-items:center;justify-content:space-between;}
+.logo{font-family:'Playfair Display',serif;font-size:1.6rem;font-style:italic;color:var(--accent);}
+.logo span{font-style:normal;font-size:0.7rem;font-family:'DM Mono',monospace;color:var(--muted);display:block;letter-spacing:2px;text-transform:uppercase;margin-top:-4px;}
+nav{display:flex;gap:3px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:4px;margin:20px 20px 0;}
+nav button{flex:1;padding:9px 4px;border:none;border-radius:10px;background:transparent;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;transition:all 0.2s;}
+nav button.active{background:var(--accent);color:#0e0e0e;font-weight:500;}
+.page{display:none;padding:20px;animation:fadeIn 0.3s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.section-title{font-family:'Playfair Display',serif;font-size:1.5rem;margin-bottom:4px;}
+.section-sub{font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:20px;}
+input,select,textarea{background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.85rem;padding:10px 14px;outline:none;transition:border-color 0.2s;width:100%;}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);}
+input::placeholder,textarea::placeholder{color:var(--muted);}
+.btn{background:var(--accent);color:#0e0e0e;border:none;border-radius:10px;padding:10px 16px;font-family:'DM Mono',monospace;font-size:0.7rem;font-weight:500;letter-spacing:1px;cursor:pointer;transition:opacity 0.2s;white-space:nowrap;}
+.btn:hover{opacity:0.85;}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:10px;padding:6px 10px;font-family:'DM Mono',monospace;font-size:0.6rem;cursor:pointer;transition:all 0.2s;}
+.btn-ghost:hover{border-color:var(--danger);color:var(--danger);}
+.input-row{display:flex;gap:8px;margin-bottom:12px;}
+.empty-state{text-align:center;padding:30px;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:1px;}
+.empty-icon{font-size:2rem;margin-bottom:8px;}
+
+/* PLANNER */
+.date-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:12px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;}
+.date-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);border-radius:3px 0 0 3px;}
+.date-card.nature::before{background:var(--accent2);}
+.date-card.entertainment::before{background:#a07eb8;}
+.date-card.chill::before{background:#e0a870;}
+.date-card.adventure::before{background:#e07070;}
+.date-card:hover{border-color:var(--accent);transform:translateX(3px);}
+.date-tag{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.date-name{font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:4px;}
+.date-meta{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.meta-pill{font-family:'DM Mono',monospace;font-size:0.6rem;padding:3px 8px;border-radius:20px;border:1px solid var(--border);color:var(--muted);}
+.meta-pill.budget{border-color:var(--accent);color:var(--accent);}
+.meta-pill.time{border-color:var(--accent2);color:var(--accent2);}
+.date-detail{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
+.date-detail.open{display:block;}
+.step{display:flex;gap:12px;margin-bottom:10px;align-items:flex-start;}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--accent);color:#0e0e0e;font-family:'DM Mono',monospace;font-size:0.65rem;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.step-text{font-size:0.85rem;line-height:1.5;color:#c8c4bc;}
+.checklist{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
+.checklist-title{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.check-item{display:flex;align-items:center;gap:10px;margin-bottom:7px;cursor:pointer;}
+.check-box{width:18px;height:18px;border-radius:5px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:0.65rem;transition:all 0.2s;flex-shrink:0;}
+.check-box.on{background:var(--accent2);border-color:var(--accent2);color:#0e0e0e;}
+.check-text{font-size:0.82rem;color:#c8c4bc;}
+.check-text.done{text-decoration:line-through;color:var(--muted);}
+
+/* BUDGET */
+.budget-header{background:linear-gradient(135deg,#1a1610,#1a1a1a);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:16px;text-align:center;}
+.budget-total-label{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.budget-amount{font-family:'Playfair Display',serif;font-size:2.8rem;color:var(--accent);line-height:1;}
+.budget-amount span{font-size:1rem;color:var(--muted);}
+.budget-bar-wrap{background:var(--border);border-radius:10px;height:6px;margin:16px 0 8px;overflow:hidden;}
+.budget-bar{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width 0.5s ease;}
+.budget-stats{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:0.65rem;}
+.budget-stats .spent{color:var(--danger);}
+.budget-stats .left{color:var(--green);}
+.expense-item{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;}
+.expense-left{display:flex;align-items:center;gap:12px;}
+.expense-icon{width:34px;height:34px;border-radius:10px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.expense-name{font-size:0.85rem;font-weight:500;}
+.expense-cat{font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--muted);text-transform:uppercase;}
+.expense-amount{font-family:'DM Mono',monospace;font-size:0.9rem;color:var(--danger);}
+
+/* PLACES */
+.visited-counter{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+.counter-label{font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+.counter-num{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--accent2);}
+.search-wrap{position:relative;margin-bottom:10px;}
+.search-wrap input{padding-left:36px;padding-right:80px;}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:0.9rem;pointer-events:none;}
+.search-btn{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:var(--accent);color:#0e0e0e;border:none;border-radius:8px;padding:5px 10px;font-family:'DM Mono',monospace;font-size:0.6rem;cursor:pointer;font-weight:500;}
+.loc-btn{background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.6rem;padding:8px 12px;cursor:pointer;display:flex;align-items:center;gap:6px;margin-bottom:12px;transition:all 0.2s;width:100%;}
+.loc-btn.active{border-color:var(--accent2);color:var(--accent2);}
+.ai-result{background:linear-gradient(135deg,#161a16,#161616);border:1px solid var(--accent2);border-radius:16px;padding:18px;margin-bottom:16px;animation:fadeIn 0.3s ease;}
+.ai-result-title{font-family:'Playfair Display',serif;font-size:1rem;color:var(--accent2);margin-bottom:6px;}
+.ai-result-body{font-size:0.82rem;line-height:1.6;color:#c8c4bc;}
+.ai-result-body strong{color:var(--accent);}
+.ai-thinking{display:flex;align-items:center;gap:10px;padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:12px;}
+.ai-thinking-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 1s ease-in-out infinite;}
+.ai-thinking-dot:nth-child(2){animation-delay:0.2s;}
+.ai-thinking-dot:nth-child(3){animation-delay:0.4s;}
+@keyframes pulse{0%,100%{opacity:0.3}50%{opacity:1}}
+.ai-thinking-text{font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--muted);letter-spacing:1px;}
+.filter-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:16px;scrollbar-width:none;}
+.filter-row::-webkit-scrollbar{display:none;}
+.filter-btn{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:1px;text-transform:uppercase;padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;white-space:nowrap;transition:all 0.2s;}
+.filter-btn.active{background:var(--accent2);border-color:var(--accent2);color:#0e0e0e;}
+.add-place-card{background:var(--surface);border:2px dashed var(--border);border-radius:16px;padding:18px;margin-bottom:12px;}
+.add-place-card input,.add-place-card select,.add-place-card textarea{margin-bottom:8px;}
+.add-place-card textarea{resize:none;height:60px;}
+.add-label{font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:12px;}
+.place-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;margin-bottom:12px;overflow:hidden;transition:border-color 0.2s;}
+.place-card:hover{border-color:var(--accent2);}
+.place-card.visited{border-color:var(--accent2);background:#0f1a17;}
+.place-body{padding:18px;}
+.place-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.place-name{font-family:'Playfair Display',serif;font-size:1.05rem;}
+.place-rating{font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--accent);}
+.place-desc{font-size:0.8rem;color:var(--muted);line-height:1.5;margin-bottom:10px;}
+.place-pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+.pill{font-family:'DM Mono',monospace;font-size:0.58rem;padding:3px 8px;border-radius:20px;border:1px solid var(--border);color:var(--muted);}
+.pill.green{border-color:var(--accent2);color:var(--accent2);}
+.pill.gold{border-color:var(--accent);color:var(--accent);}
+.pill.purple{border-color:#a07eb8;color:#a07eb8;}
+.pill.blue{border-color:#7ea8b8;color:#7ea8b8;}
+.visited-row{display:flex;align-items:center;gap:10px;padding:10px 18px;border-top:1px solid var(--border);}
+.vtoggle{width:20px;height:20px;border-radius:6px;border:2px solid var(--border);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.7rem;transition:all 0.2s;flex-shrink:0;}
+.vtoggle.on{background:var(--accent2);border-color:var(--accent2);color:#0e0e0e;}
+.vlabel{font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;cursor:pointer;}
+.vlabel.on{color:var(--accent2);}
+.vdate{margin-left:auto;font-family:'DM Mono',monospace;font-size:0.58rem;color:var(--muted);}
+.memories-section{padding:12px 18px;border-top:1px solid var(--border);background:var(--surface2);}
+.mem-header{display:flex;align-items:center;justify-content:space-between;}
+.mem-title{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
+.mem-toggle{font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--muted);cursor:pointer;border:none;background:none;letter-spacing:1px;}
+.mem-toggle:hover{color:var(--accent);}
+.mem-body{margin-top:12px;}
+.media-upload-area{border:2px dashed var(--border);border-radius:12px;padding:14px;text-align:center;cursor:pointer;transition:border-color 0.2s;position:relative;margin-bottom:10px;}
+.media-upload-area:hover{border-color:var(--accent);}
+.media-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.upload-hint{font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--muted);letter-spacing:1px;}
+.upload-count{font-family:'DM Mono',monospace;font-size:0.55rem;color:var(--accent2);margin-top:3px;}
+.media-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.media-thumb{border-radius:8px;overflow:hidden;aspect-ratio:1;position:relative;background:var(--border);}
+.media-thumb img,.media-thumb video{width:100%;height:100%;object-fit:cover;}
+.media-thumb .del-media{position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.75);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:0.6rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.media-thumb .vid-badge{position:absolute;bottom:4px;left:4px;background:rgba(0,0,0,0.65);color:#fff;font-family:'DM Mono',monospace;font-size:0.5rem;padding:2px 5px;border-radius:4px;}
+
+/* JOURNAL */
+.j-stats-row{display:flex;gap:8px;margin-bottom:16px;}
+.j-stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;flex:1;}
+.j-stat-num{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--accent);}
+.j-stat-label{font-family:'DM Mono',monospace;font-size:0.58rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+.journal-write{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:16px;}
+.journal-write textarea{resize:none;height:120px;margin-bottom:10px;line-height:1.6;}
+.journal-meta-row{display:flex;gap:8px;margin-bottom:10px;}
+.journal-meta-row input,.journal-meta-row select{flex:1;width:auto;}
+.sub-label{font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+.stars-row{display:flex;gap:4px;margin-bottom:12px;}
+.star{font-size:1.4rem;cursor:pointer;opacity:0.3;transition:all 0.15s;color:var(--accent);}
+.star.on{opacity:1;}
+.mood-row{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+.mood-btn{background:transparent;border:1px solid var(--border);border-radius:20px;padding:6px 10px;font-size:0.8rem;cursor:pointer;transition:all 0.2s;color:var(--muted);}
+.mood-btn.selected{background:var(--accent);border-color:var(--accent);color:#0e0e0e;}
+.j-entry{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:12px;animation:fadeIn 0.3s ease;}
+.j-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
+.j-place{font-family:'Playfair Display',serif;font-size:1rem;}
+.j-date{font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--muted);}
+.j-stars{font-size:0.9rem;color:var(--accent);margin-bottom:6px;}
+.j-mood{display:inline-block;font-family:'DM Mono',monospace;font-size:0.6rem;padding:3px 8px;border-radius:20px;border:1px solid var(--border);color:var(--muted);margin-bottom:8px;}
+.j-body{font-size:0.82rem;line-height:1.6;color:#c8c4bc;white-space:pre-wrap;}
+.j-actions{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Solo<span>Date Companion</span></div>
+  <div style="font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--muted);letter-spacing:1px;">NAIROBI</div>
+</header>
+
+<nav>
+  <button class="active" onclick="showPage('planner',this)">📅 Plan</button>
+  <button onclick="showPage('budget',this)">💰 Budget</button>
+  <button onclick="showPage('places',this)">📍 Places</button>
+  <button onclick="showPage('journal',this)">📓 Journal</button>
+</nav>
+
+<!-- ══ PLANNER ══ -->
+<div class="page active" id="planner">
+  <div style="margin-bottom:20px;"><div class="section-title">Plan Your Date</div><div class="section-sub">Tap to expand · tick checklist</div></div>
+
+  <div class="date-card nature" onclick="toggleDetail(this)">
+    <div class="date-tag">🌿 Nature</div><div class="date-name">Waterfront Karen</div>
+    <div style="font-size:0.8rem;color:var(--muted);">Water park, arcade, food — all in one spot</div>
+    <div class="date-meta"><div class="meta-pill budget">Ksh 600–1,000</div><div class="meta-pill time">Half day</div><div class="meta-pill">15 min away</div></div>
+    <div class="date-detail">
+      <div class="step"><div class="step-num">1</div><div class="step-text">Matatu: Maasai Lodge → Galleria (Ksh 30–50)</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text">Galleria → Waterfront Karen (Ksh 30–50, 10 min)</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-text">Maji Magic water park — slides, kayak, paddleboard</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-text">Freshen up, walk the mall with earphones in</div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-text">Dinner at Choma Ranch or CJ's — treat yourself</div></div>
+      <div class="step"><div class="step-num">6</div><div class="step-text">Optional: Strike Arcade — bowling, VR (closes 10 PM)</div></div>
+      <div class="checklist"><div class="checklist-title">📋 Checklist</div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Change of clothes / trunks</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">M-Pesa loaded</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Earphones</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Water bottle</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Leave before 5:30 PM (Maji Magic closes)</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="date-card nature" onclick="toggleDetail(this)">
+    <div class="date-tag">🌿 Nature</div><div class="date-name">Karura Forest</div>
+    <div style="font-size:0.8rem;color:var(--muted);">Trails, waterfall, bike ride through the trees</div>
+    <div class="date-meta"><div class="meta-pill budget">Ksh 400–900</div><div class="meta-pill time">Half day</div><div class="meta-pill">1–1.5 hrs away</div></div>
+    <div class="date-detail">
+      <div class="step"><div class="step-num">1</div><div class="step-text">Matatu to CBD → Kiambu Road → alight at Gate C</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text">Entry ~Ksh 100. Rent a bike (~Ksh 500–800)</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-text">Ride toward the waterfall — the best part</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-text">Sit somewhere quiet, eat your snack, breathe</div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-text">Leave before 4 PM to beat traffic</div></div>
+      <div class="checklist"><div class="checklist-title">📋 Checklist</div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Reusable water bottle (no plastic allowed)</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Snack (no plastic bags inside)</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Cash for bike rental</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Comfortable shoes</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Download offline maps (Maps.me)</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="date-card adventure" onclick="toggleDetail(this)">
+    <div class="date-tag">🏔️ Adventure</div><div class="date-name">Ngong Hills Hike</div>
+    <div style="font-size:0.8rem;color:var(--muted);">Rift Valley views, fresh air, close to Rongai</div>
+    <div class="date-meta"><div class="meta-pill budget">Under Ksh 500</div><div class="meta-pill time">Half day</div><div class="meta-pill">Very close</div></div>
+    <div class="date-detail">
+      <div class="step"><div class="step-num">1</div><div class="step-text">Matatu from Rongai toward Ngong town</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text">Head to Ngong Hills trailhead — small entry fee</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-text">Hike the ridge — Rift Valley views are insane on a clear day</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-text">Carry water and snacks — nothing to buy on the hill</div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-text">Head back via Ngong town, grab mandazi and chai</div></div>
+      <div class="checklist"><div class="checklist-title">📋 Checklist</div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Go early (before 8 AM) — clearer views</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Plenty of water</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Snacks for the trail</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Comfortable hiking shoes</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Tell someone your location</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Fully charged phone</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="date-card chill" onclick="toggleDetail(this)">
+    <div class="date-tag">☕ Chill</div><div class="date-name">Nairobi Arboretum</div>
+    <div style="font-size:0.8rem;color:var(--muted);">Free entry, quiet walk, beautiful trees</div>
+    <div class="date-meta"><div class="meta-pill budget">Under Ksh 300</div><div class="meta-pill time">2–3 hrs</div><div class="meta-pill">Free entry</div></div>
+    <div class="date-detail">
+      <div class="step"><div class="step-num">1</div><div class="step-text">Matatu to CBD, then toward State House Road</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text">Entry is free — just walk in</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-text">Pick a spot under a big tree, sit down, do nothing</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-text">Journal, read, or just exist quietly</div></div>
+      <div class="checklist"><div class="checklist-title">📋 Checklist</div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Journal or book</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Water and snack</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Earphones</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Something to sit on</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="date-card entertainment" onclick="toggleDetail(this)">
+    <div class="date-tag">🎮 Entertainment</div><div class="date-name">Lake Naivasha Day Trip</div>
+    <div style="font-size:0.8rem;color:var(--muted);">Hell's Gate cycling + boat ride + Crescent Island</div>
+    <div class="date-meta"><div class="meta-pill budget">Ksh 2,000–4,000</div><div class="meta-pill time">Full day</div><div class="meta-pill">1.5–2 hrs away</div></div>
+    <div class="date-detail">
+      <div class="step"><div class="step-num">1</div><div class="step-text">Early matatu: Rongai → CBD → Naivasha (leave by 7 AM)</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text">Hell's Gate — cycle through gorges (Ksh 500 + Ksh 800 bike)</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-text">Lunch at a roadside spot near the lake</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-text">Boat ride — see hippos up close</div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-text">Optional: Crescent Island — walk among giraffes and zebras</div></div>
+      <div class="step"><div class="step-num">6</div><div class="step-text">Head back before 5 PM</div></div>
+      <div class="checklist"><div class="checklist-title">📋 Checklist</div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Leave by 7 AM</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Cash Ksh 2,500+</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Sunscreen</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Plenty of water + snacks</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Powerbank</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="date-card chill" onclick="toggleDetail(this)">
+    <div class="date-tag">🎬 Chill</div><div class="date-name">Solo Cinema Day</div>
+    <div style="font-size:0.8rem;color:var(--muted);">Just you, the screen, and silence</div>
+    <div class="date-meta"><div class="meta-pill budget">Ksh 700–1,200</div><div class="meta-pill time">3–4 hrs</div><div class="meta-pill">Junction Mall</div></div>
+    <div class="date-detail">
+      <div class="step"><div class="step-num">1</div><div class="step-text">Check what's showing at iMax Junction — weekday afternoon</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text">Buy ticket early — pick the best seat, solo perks</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-text">Get popcorn, sit wherever, no compromise</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-text">Walk around Junction Mall after, grab food</div></div>
+      <div class="checklist"><div class="checklist-title">📋 Checklist</div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Check movie schedule</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Book ticket online</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Bring hoodie (AC is cold)</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Budget for popcorn + drink</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="date-card adventure" onclick="toggleDetail(this)">
+    <div class="date-tag">🦁 Adventure</div><div class="date-name">Nairobi National Park</div>
+    <div style="font-size:0.8rem;color:var(--muted);">Safari in the city — lions, rhinos, skyline backdrop</div>
+    <div class="date-meta"><div class="meta-pill budget">Ksh 500–1,500</div><div class="meta-pill time">Half day</div><div class="meta-pill">30 min away</div></div>
+    <div class="date-detail">
+      <div class="step"><div class="step-num">1</div><div class="step-text">Matatu or Bolt to Nairobi National Park main gate</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text">Pay entry via eCitizen — Ksh 500 residents</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-text">Join a shared tour or go with a friend's car</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-text">Spot lions, rhinos, giraffes — skyline in the back</div></div>
+      <div class="checklist"><div class="checklist-title">📋 Checklist</div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Book via eCitizen app</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Arrange transport</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Go early morning</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Camera / clean phone lens</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="date-card entertainment" onclick="toggleDetail(this)">
+    <div class="date-tag">🎮 Entertainment</div><div class="date-name">Laserland Karen</div>
+    <div style="font-size:0.8rem;color:var(--muted);">Laser tag + VR — surprisingly fun solo</div>
+    <div class="date-meta"><div class="meta-pill budget">Ksh 800–1,500</div><div class="meta-pill time">2–3 hrs</div><div class="meta-pill">Near Galleria</div></div>
+    <div class="date-detail">
+      <div class="step"><div class="step-num">1</div><div class="step-text">Matatu to Galleria, short walk or boda to Laserland</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text">Pay for laser tag — you'll join a random group</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-text">Play laser tag — full workout, trust the process</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-text">Try VR after — multiple experiences available</div></div>
+      <div class="checklist"><div class="checklist-title">📋 Checklist</div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Comfortable clothes (you'll sweat)</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Flat shoes — no heels</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Budget for 2 sessions</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Water to drink after</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="date-card nature" onclick="toggleDetail(this)">
+    <div class="date-tag">🌿 Nature</div><div class="date-name">Oloolua Nature Trail</div>
+    <div style="font-size:0.8rem;color:var(--muted);">Karen forest, waterfall, caves — very peaceful</div>
+    <div class="date-meta"><div class="meta-pill budget">~Ksh 300</div><div class="meta-pill time">2–3 hrs</div><div class="meta-pill">Karen</div></div>
+    <div class="date-detail">
+      <div class="step"><div class="step-num">1</div><div class="step-text">Matatu to Karen, short boda or walk to Oloolua</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text">Entry ~Ksh 100 — small, intimate forest</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-text">Follow the trail — leads to a waterfall and cave</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-text">Sit by the waterfall, eat your snack, just be</div></div>
+      <div class="checklist"><div class="checklist-title">📋 Checklist</div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Waterproof shoes (can get muddy)</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Water and snacks</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Small cash for entry</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="date-card chill" onclick="toggleDetail(this)">
+    <div class="date-tag">☕ Chill</div><div class="date-name">Garden Café Solo Date</div>
+    <div style="font-size:0.8rem;color:var(--muted);">Talisman or Rusty Nail — sit, eat, exist</div>
+    <div class="date-meta"><div class="meta-pill budget">Ksh 500–2,000</div><div class="meta-pill time">2 hrs</div><div class="meta-pill">Karen</div></div>
+    <div class="date-detail">
+      <div class="step"><div class="step-num">1</div><div class="step-text">Pick Talisman (nicer, pricier) or Rusty Nail (chill, cheaper)</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text">Dress up a little — this is a date, even if solo</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-text">Sit outside, order one good thing, take your time</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-text">No phone scrolling — observe, think, enjoy</div></div>
+      <div class="checklist"><div class="checklist-title">📋 Checklist</div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Dress up (it's a date!)</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Journal or book</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Put phone away for 30 min</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="date-card entertainment" onclick="toggleDetail(this)">
+    <div class="date-tag">🎵 Event</div><div class="date-name">Blankets & Wine</div>
+    <div style="font-size:0.8rem;color:var(--muted);">Outdoor music festival — solo dates hit different here</div>
+    <div class="date-meta"><div class="meta-pill budget">Ksh 1,500–2,500</div><div class="meta-pill time">Full afternoon</div><div class="meta-pill">Ngong Racecourse</div></div>
+    <div class="date-detail">
+      <div class="step"><div class="step-num">1</div><div class="step-text">Check the date (monthly, usually first Sunday)</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text">Buy ticket in advance — cheaper than at gate</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-text">Bring a blanket, lay on the grass</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-text">Buy food and drinks inside — good selection</div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-text">Vibe — nobody cares you're solo</div></div>
+      <div class="checklist"><div class="checklist-title">📋 Checklist</div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Buy ticket early (sells out)</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Bring a blanket or mat</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Comfortable clothes</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Sunscreen</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Cash for food inside</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="date-card adventure" onclick="toggleDetail(this)">
+    <div class="date-tag">🏛️ Cultural</div><div class="date-name">Nairobi National Museum</div>
+    <div style="font-size:0.8rem;color:var(--muted);">History, wildlife exhibits, art — walkable from CBD</div>
+    <div class="date-meta"><div class="meta-pill budget">Ksh 200</div><div class="meta-pill time">2–3 hrs</div><div class="meta-pill">15 min walk from CBD</div></div>
+    <div class="date-detail">
+      <div class="step"><div class="step-num">1</div><div class="step-text">Matatu to CBD (Kencom/Railways)</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text">Walk 15–20 min up Museum Hill Road — or take a boda</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-text">Entry Ksh 200 residents — carry your ID</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-text">Explore at your own pace — prehistoric Kenya, wildlife, culture, art</div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-text">Check out Snake Park next door after</div></div>
+      <div class="step"><div class="step-num">6</div><div class="step-text">Walk back down to Uhuru Park to decompress</div></div>
+      <div class="checklist"><div class="checklist-title">📋 Checklist</div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Carry National ID</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Go early — less crowded</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Water and snack</div></div>
+        <div class="check-item" onclick="tick(this)"><div class="check-box"></div><div class="check-text">Comfortable walking shoes</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BUDGET ══ -->
+<div class="page" id="budget">
+  <div style="margin-bottom:20px;"><div class="section-title">Budget Tracker</div><div class="section-sub">Track your date spending</div></div>
+  <div class="budget-header">
+    <div class="budget-total-label">Today's Budget</div>
+    <div class="budget-amount"><span>Ksh </span><span id="budgetNum">0</span></div>
+    <div class="budget-bar-wrap"><div class="budget-bar" id="budgetBar" style="width:0%"></div></div>
+    <div class="budget-stats"><div class="spent">Spent: Ksh <span id="spentNum">0</span></div><div class="left">Left: Ksh <span id="leftNum">0</span></div></div>
+  </div>
+  <div class="input-row">
+    <input type="number" id="budgetInput" placeholder="Set budget (Ksh)" style="flex:1;width:auto;" />
+    <button class="btn" onclick="setBudget()">Set</button>
+  </div>
+  <div class="input-row">
+    <input type="text" id="expenseName" placeholder="What did you spend on?" style="flex:2;width:auto;" />
+    <input type="number" id="expenseAmount" placeholder="Ksh" style="flex:1;min-width:80px;width:auto;" />
+  </div>
+  <div class="input-row">
+    <select id="expenseCat" style="flex:1;width:auto;">
+      <option value="transport">🚌 Transport</option>
+      <option value="food">🍽️ Food</option>
+      <option value="activity">🎯 Activity</option>
+      <option value="entry">🎟️ Entry</option>
+      <option value="other">📦 Other</option>
+    </select>
+    <button class="btn" onclick="addExpense()" style="flex:1;">+ Add</button>
+  </div>
+  <div id="expenseList"><div class="empty-state"><div class="empty-icon">💸</div>No expenses yet!</div></div>
+</div>
+
+<!-- ══ PLACES ══ -->
+<div class="page" id="places">
+  <div style="margin-bottom:16px;"><div class="section-title">Places Near You</div><div class="section-sub">Search · explore · remember</div></div>
+  <div class="visited-counter">
+    <div><div class="counter-label">Places Visited</div><div class="counter-num"><span id="visitedCount">0</span> / <span id="totalCount">0</span></div></div>
+    <div style="font-size:1.8rem;">🗺️</div>
+  </div>
+  <button class="loc-btn" id="locBtn" onclick="getLocation()"><span>📍</span><span id="locText">Share my location for distance info</span></button>
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="Search any place in Nairobi..." onkeydown="if(event.key==='Enter')doSearch()" />
+    <button class="search-btn" onclick="doSearch()">Ask AI</button>
+  </div>
+  <div id="aiArea"></div>
+  <div class="filter-row">
+    <button class="filter-btn active" onclick="filterPlaces('all',this)">All</button>
+    <button class="filter-btn" onclick="filterPlaces('nature',this)">🌿 Nature</button>
+    <button class="filter-btn" onclick="filterPlaces('entertainment',this)">🎮 Fun</button>
+    <button class="filter-btn" onclick="filterPlaces('chill',this)">☕ Chill</button>
+    <button class="filter-btn" onclick="filterPlaces('budget',this)">💚 Free/Cheap</button>
+    <button class="filter-btn" onclick="filterPlaces('visited',this)">✅ Visited</button>
+  </div>
+  <div class="add-place-card">
+    <div class="add-label">+ Add Your Own Place</div>
+    <input type="text" id="newPlaceName" placeholder="Place name" />
+    <select id="newPlaceCat" style="margin:8px 0;">
+      <option value="nature">🌿 Nature</option>
+      <option value="entertainment">🎮 Fun / Entertainment</option>
+      <option value="chill">☕ Chill</option>
+      <option value="budget">💚 Free / Cheap</option>
+    </select>
+    <textarea id="newPlaceDesc" placeholder="Describe it..." style="margin-bottom:8px;resize:none;height:60px;"></textarea>
+    <input type="text" id="newPlaceCost" placeholder="Estimated cost (e.g. Ksh 500)" style="margin-bottom:8px;" />
+    <button class="btn" onclick="addCustomPlace()" style="width:100%;">Add Place</button>
+  </div>
+  <div id="placesList"></div>
+</div>
+
+<!-- ══ JOURNAL ══ -->
+<div class="page" id="journal">
+  <div style="margin-bottom:20px;"><div class="section-title">Date Journal</div><div class="section-sub">Write · rate · remember</div></div>
+
+  <div class="j-stats-row">
+    <div class="j-stat"><div class="j-stat-num" id="jTotal">0</div><div class="j-stat-label">Dates</div></div>
+    <div class="j-stat"><div class="j-stat-num" id="jAvg">—</div><div class="j-stat-label">Avg Rating</div></div>
+    <div class="j-stat"><div class="j-stat-num" id="jMonth">0</div><div class="j-stat-label">This Month</div></div>
+  </div>
+
+  <div class="journal-write">
+    <div style="font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:12px;">✍️ New Entry</div>
+    <div class="journal-meta-row">
+      <input type="text" id="jPlace" placeholder="Where did you go?" />
+      <input type="date" id="jDate" />
+    </div>
+    <div class="sub-label">Rate your date</div>
+    <div class="stars-row" id="starsRow">
+      <span class="star" onclick="rateStar(1)">★</span>
+      <span class="star" onclick="rateStar(2)">★</span>
+      <span class="star" onclick="rateStar(3)">★</span>
+      <span class="star" onclick="rateStar(4)">★</span>
+      <span class="star" onclick="rateStar(5)">★</span>
+    </div>
+    <div class="sub-label">Your mood</div>
+    <div class="mood-row">
+      <button class="mood-btn" onclick="selectMood(this)">😌 Peaceful</button>
+      <button class="mood-btn" onclick="selectMood(this)">🔥 Hyped</button>
+      <button class="mood-btn" onclick="selectMood(this)">🥲 Emotional</button>
+      <button class="mood-btn" onclick="selectMood(this)">😎 Confident</button>
+      <button class="mood-btn" onclick="selectMood(this)">🌊 Chill</button>
+      <button class="mood-btn" onclick="selectMood(this)">✨ Inspired</button>
+    </div>
+    <textarea id="jText" placeholder="How was it? What did you do, see, feel? Write freely..."></textarea>
+    <button class="btn" onclick="saveEntry()" style="width:100%;margin-top:10px;">Save Entry</button>
+  </div>
+
+  <div id="journalList"><div class="empty-state"><div class="empty-icon">📓</div>No entries yet. Go on a date first!</div></div>
+</div>
+
+<script>
+// NAV
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// PLANNER
+function toggleDetail(card){card.querySelector('.date-detail').classList.toggle('open');}
+function tick(item){
+  event.stopPropagation();
+  const box=item.querySelector('.check-box'),txt=item.querySelector('.check-text');
+  box.classList.toggle('on');txt.classList.toggle('done');
+  box.textContent=box.classList.contains('on')?'✓':'';
+}
+
+// BUDGET
+let budget=0,expenses=[];
+function setBudget(){
+  const val=parseInt(document.getElementById('budgetInput').value);
+  if(!val||val<=0)return;
+  budget=val;document.getElementById('budgetNum').textContent=val.toLocaleString();
+  updateBudgetUI();document.getElementById('budgetInput').value='';
+}
+function addExpense(){
+  const name=document.getElementById('expenseName').value.trim();
+  const amount=parseInt(document.getElementById('expenseAmount').value);
+  const cat=document.getElementById('expenseCat').value;
+  if(!name||!amount||amount<=0)return;
+  expenses.push({name,amount,cat});
+  document.getElementById('expenseName').value='';document.getElementById('expenseAmount').value='';
+  renderExpenses();updateBudgetUI();
+}
+function removeExpense(i){expenses.splice(i,1);renderExpenses();updateBudgetUI();}
+const catIcons={transport:'🚌',food:'🍽️',activity:'🎯',entry:'🎟️',other:'📦'};
+function renderExpenses(){
+  const list=document.getElementById('expenseList');
+  if(!expenses.length){list.innerHTML=`<div class="empty-state"><div class="empty-icon">💸</div>No expenses yet!</div>`;return;}
+  list.innerHTML=expenses.map((e,i)=>`
+    <div class="expense-item">
+      <div class="expense-left"><div class="expense-icon">${catIcons[e.cat]}</div>
+        <div><div class="expense-name">${e.name}</div><div class="expense-cat">${e.cat}</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="expense-amount">−Ksh ${e.amount.toLocaleString()}</div>
+        <button class="btn-ghost" onclick="removeExpense(${i})">✕</button>
+      </div>
+    </div>`).join('');
+}
+function updateBudgetUI(){
+  const spent=expenses.reduce((s,e)=>s+e.amount,0),left=budget-spent;
+  const pct=budget>0?Math.min((spent/budget)*100,100):0;
+  document.getElementById('spentNum').textContent=spent.toLocaleString();
+  document.getElementById('leftNum').textContent=left.toLocaleString();
+  document.getElementById('budgetBar').style.width=pct+'%';
+  document.getElementById('budgetBar').style.background=pct>90?'var(--danger)':pct>70?'var(--accent)':'linear-gradient(90deg,var(--accent2),var(--accent))';
+  document.querySelector('.budget-stats .left').style.color=left<0?'var(--danger)':'var(--green)';
+}
+
+// LOCATION
+let userLat=null,userLng=null;
+function getLocation(){
+  const btn=document.getElementById('locBtn');
+  btn.innerHTML='<span>⏳</span><span>Getting your location...</span>';
+  navigator.geolocation.getCurrentPosition(pos=>{
+    userLat=pos.coords.latitude;userLng=pos.coords.longitude;
+    btn.innerHTML='<span>✅</span><span>Location found — distance info enabled</span>';
+    btn.classList.add('active');
+    renderPlaces(currentFilter);
+  },()=>{
+    btn.innerHTML='<span>📍</span><span>Location denied — using Rongai area</span>';
+  });
+}
+
+// AI SEARCH
+async function doSearch(){
+  const q=document.getElementById('searchInput').value.trim();
+  if(!q)return;
+  const area=document.getElementById('aiArea');
+  area.innerHTML=`<div class="ai-thinking"><div class="ai-thinking-dot"></div><div class="ai-thinking-dot"></div><div class="ai-thinking-dot"></div><div class="ai-thinking-text">Searching for "${q}"...</div></div>`;
+  const loc=userLat?`User's exact location: ${userLat.toFixed(4)}, ${userLng.toFixed(4)} Nairobi Kenya.`:`User is in Ongata Rongai / Maasai Lodge, Nairobi Kenya.`;
+  const prompt=`You are a Nairobi local expert and solo date guide. ${loc}\nUser is searching for: "${q}"\nGive a rich breakdown:\n1. **What it is**\n2. **Distance & how to get there** — matatu routes, fares in Ksh, travel time\n3. **What to experience** — everything to do, see, eat, enjoy there\n4. **Best time to go**\n5. **Budget breakdown** — itemized in Ksh\n6. **Solo date tips**\n7. **What to bring**\nBe warm, practical, Kenya-specific. Bold for headers.`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    const text=data.content?.map(b=>b.text||'').join('')||'No response.';
+    const html=text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>');
+    area.innerHTML=`<div class="ai-result"><div class="ai-result-title">📍 ${q}</div><div class="ai-result-body"><p>${html}</p></div></div>`;
+  }catch(e){
+    area.innerHTML=`<div class="ai-result"><div class="ai-result-body">Couldn't fetch info right now. Try again.</div></div>`;
+  }
+}
+
+// PLACES
+let places=[
+  {id:'galleria',name:'Galleria Mall',rating:'4.4',cat:'chill',desc:"Your closest spot — 5 min away. Food court, Carrefour, relaxed vibe.",dist:'5 min',pills:[{t:'Very cheap',c:'green'},{t:'5 min away',c:''},{t:'Food',c:''},{t:'Chill',c:''}]},
+  {id:'waterfront',name:'Waterfront Karen',rating:'4.4',cat:'entertainment',desc:"Maji Magic water park, Strike Arcade (bowling, VR, pool), Jive Golf, great restaurants.",dist:'15–20 min',pills:[{t:'Ksh 600–1,500',c:'gold'},{t:'15–20 min',c:''},{t:'Water park',c:'green'},{t:'Arcade',c:'green'}]},
+  {id:'ngong',name:'Ngong Hills',rating:'4.6',cat:'nature budget',desc:"Iconic ridge hike with breathtaking Rift Valley views. Very close to Rongai.",dist:'20–30 min',pills:[{t:'Under Ksh 500',c:'green'},{t:'20–30 min',c:''},{t:'Hiking',c:'green'},{t:'Views',c:''}]},
+  {id:'oloolua',name:'Oloolua Nature Trail',rating:'4.5',cat:'nature budget',desc:"Quiet forest trail in Karen with a waterfall and caves. Peaceful and less crowded.",dist:'20 min',pills:[{t:'~Ksh 100',c:'green'},{t:'Karen',c:''},{t:'Waterfall',c:'green'},{t:'Caves',c:''}]},
+  {id:'karura',name:'Karura Forest',rating:'4.7',cat:'nature',desc:"Massive urban forest with trails, waterfall, caves, and bike rentals at Gate C.",dist:'45–90 min',pills:[{t:'Ksh 400–900',c:'gold'},{t:'45–90 min',c:''},{t:'Bike rental',c:'green'},{t:'Waterfall',c:''}]},
+  {id:'arboretum',name:'Nairobi Arboretum',rating:'4.5',cat:'chill budget',desc:"Free entry botanical garden. Peaceful, shaded, rarely crowded on weekdays.",dist:'40–50 min',pills:[{t:'Free entry',c:'green'},{t:'CBD area',c:''},{t:'Walking',c:'green'},{t:'Peaceful',c:''}]},
+  {id:'laserland',name:'Laserland Karen',rating:'4.6',cat:'entertainment',desc:"Laser tag + VR near Galleria Mall. Surprisingly fun solo.",dist:'10 min',pills:[{t:'Ksh 800–1,500',c:'gold'},{t:'Near Galleria',c:''},{t:'Laser tag',c:'purple'},{t:'VR',c:'purple'}]},
+  {id:'naivasha',name:'Lake Naivasha',rating:'4.7',cat:'nature',desc:"Full day — Hell's Gate cycling, boat rides with hippos, Crescent Island wildlife walk.",dist:'1.5–2 hrs',pills:[{t:'Ksh 2,000–4,000',c:'gold'},{t:'1.5–2 hrs',c:''},{t:'Cycling',c:'green'},{t:'Boat ride',c:'green'}]},
+  {id:'nairobinp',name:'Nairobi National Park',rating:'4.5',cat:'entertainment nature',desc:"Only national park inside a capital city. Lions, rhinos, giraffes with the skyline backdrop.",dist:'30 min',pills:[{t:'Ksh 500 resident',c:'gold'},{t:'30 min away',c:''},{t:'Wildlife',c:'green'},{t:'Safari',c:''}]},
+  {id:'uhuru',name:'Uhuru Park',rating:'4.3',cat:'chill budget',desc:"Free public park in the CBD. Boat rides on the lake, open lawns.",dist:'40–50 min',pills:[{t:'Free entry',c:'green'},{t:'CBD',c:''},{t:'Boat ride',c:''},{t:'Chill',c:''}]},
+  {id:'talisman',name:'Talisman Restaurant',rating:'4.6',cat:'chill',desc:"Beautiful garden restaurant in Karen. Lush outdoor seating, fairy lights, amazing food.",dist:'15 min',pills:[{t:'Ksh 1,500–3,000',c:'gold'},{t:'Karen',c:''},{t:'Garden dining',c:''},{t:'Romantic vibe',c:'purple'}]},
+  {id:'rustynail',name:'The Rusty Nail',rating:'4.5',cat:'chill budget',desc:"Cozy Karen hangout with outdoor seating, good drinks, relaxed crowd.",dist:'15 min',pills:[{t:'Ksh 500–1,500',c:'gold'},{t:'Karen',c:''},{t:'Outdoor seating',c:''},{t:'Drinks',c:''}]},
+  {id:'imax',name:'iMax Cinema — Junction Mall',rating:'4.4',cat:'entertainment',desc:"Solo cinema is one of the best solo date experiences.",dist:'20–30 min',pills:[{t:'Ksh 700–1,200',c:'gold'},{t:'Junction Mall',c:''},{t:'Movies',c:'purple'},{t:'iMax',c:''}]},
+  {id:'museum',name:'Nairobi National Museum',rating:'4.4',cat:'nature budget',desc:"Kenya's history, wildlife exhibits, art galleries. Ksh 200 entry, 2–3 hrs. Walkable from CBD.",dist:'40–50 min',pills:[{t:'Ksh 200 resident',c:'green'},{t:'CBD',c:''},{t:'Museum',c:''},{t:'Art',c:''}]},
+  {id:'tworivers',name:'Two Rivers Mall',rating:'4.5',cat:'entertainment',desc:"Largest mall in East Africa. Ice rink, cinema, restaurants.",dist:'50–60 min',pills:[{t:'Ksh 500–2,000',c:'gold'},{t:'Runda',c:''},{t:'Ice rink',c:'purple'},{t:'Cinema',c:''}]},
+  {id:'maasaimarket',name:'Maasai Market',rating:'4.3',cat:'nature budget',desc:"Open-air craft market. Jewellery, carvings, fabrics. Free to browse.",dist:'40–50 min',pills:[{t:'Free to browse',c:'green'},{t:'Various locations',c:''},{t:'Crafts',c:''},{t:'Photography',c:''}]},
+  {id:'village',name:'Village Market',rating:'4.4',cat:'chill entertainment',desc:"Upscale open-air mall in Gigiri with food court and outdoor spaces.",dist:'50–60 min',pills:[{t:'Ksh 500–2,000',c:'gold'},{t:'Gigiri',c:''},{t:'Food court',c:''},{t:'Shopping',c:''}]},
+  {id:'crescent',name:'Crescent Island Sanctuary',rating:'4.6',cat:'nature',desc:"Walk among giraffes, zebras and wildebeest on Lake Naivasha. Surreal.",dist:'1.5–2 hrs',pills:[{t:'Ksh 4,000 entry',c:'gold'},{t:'Naivasha',c:''},{t:'Walking safari',c:'green'},{t:'Wildlife',c:''}]},
+  {id:'blankets',name:'Blankets & Wine',rating:'4.7',cat:'entertainment',desc:"Nairobi's iconic outdoor music festival at Ngong Racecourse.",dist:'20–30 min',pills:[{t:'Ksh 1,500–2,500',c:'gold'},{t:'Ngong Racecourse',c:''},{t:'Live music',c:'purple'},{t:'Monthly event',c:''}]},
+  {id:'junction',name:'The Junction Mall',rating:'4.3',cat:'chill entertainment',desc:"Relaxed mall with good restaurants, cinema, and open spaces.",dist:'20–30 min',pills:[{t:'Ksh 300–1,500',c:'gold'},{t:'Ngong Rd',c:''},{t:'Cinema',c:''},{t:'Food',c:''}]},
+];
+
+let visited={},memories={},memOpen={},currentFilter='all';
+
+function addCustomPlace(){
+  const name=document.getElementById('newPlaceName').value.trim();
+  if(!name)return;
+  const id='custom_'+Date.now();
+  places.push({id,name,rating:'—',cat:document.getElementById('newPlaceCat').value,desc:document.getElementById('newPlaceDesc').value.trim()||'Your custom place.',dist:'?',custom:true,pills:[{t:document.getElementById('newPlaceCost').value.trim()||'Custom',c:'gold'},{t:'Added by you',c:'purple'}]});
+  ['newPlaceName','newPlaceDesc','newPlaceCost'].forEach(id=>document.getElementById(id).value='');
+  renderPlaces(currentFilter);
+}
+
+function renderPlaces(filter){
+  currentFilter=filter;
+  const list=document.getElementById('placesList');
+  let filtered=filter==='all'?places:filter==='visited'?places.filter(p=>visited[p.id]):places.filter(p=>p.cat.includes(filter));
+  if(!filtered.length){list.innerHTML=`<div class="empty-state"><div class="empty-icon">🔍</div>No places found.</div>`;updateCounter();return;}
+  list.innerHTML=filtered.map(p=>{
+    const isV=!!visited[p.id];
+    const pills=p.pills.map(pl=>`<span class="pill ${pl.c}">${pl.t}</span>`).join('');
+    const mems=memories[p.id]||[];
+    const isMemOpen=!!memOpen[p.id];
+    const distPill=userLat?`<span class="pill blue">📍 ~${p.dist} away</span>`:'';
+    const mediaGrid=mems.length?`<div class="media-grid" style="margin-top:10px;">${mems.map((m,mi)=>`
+      <div class="media-thumb">
+        ${m.type==='video'?`<video src="${m.src}" muted playsinline onclick="this.paused?this.play():this.pause()"></video><div class="vid-badge">▶ VIDEO</div>`:`<img src="${m.src}" />`}
+        <button class="del-media" onclick="deleteMedia('${p.id}',${mi})">✕</button>
+      </div>`).join('')}</div>`:'';
+    return `
+    <div class="place-card ${isV?'visited':''}">
+      <div class="place-body">
+        <div class="place-top">
+          <div class="place-name">${isV?'✅ ':''}${p.name}${p.custom?` <span style="font-family:'DM Mono',monospace;font-size:0.55rem;color:var(--accent);">YOURS</span>`:''}</div>
+          <div class="place-rating">${p.rating!=='—'?'⭐ ':''}${p.rating}</div>
+        </div>
+        <div class="place-desc">${p.desc}</div>
+        <div class="place-pills">${pills}${distPill}</div>
+      </div>
+      <div class="visited-row">
+        <div class="vtoggle ${isV?'on':''}" onclick="toggleVisited('${p.id}')">${isV?'✓':''}</div>
+        <div class="vlabel ${isV?'on':''}" onclick="toggleVisited('${p.id}')">${isV?'Been here!':'Mark as visited'}</div>
+        ${visited[p.id]?`<div class="vdate">${visited[p.id]}</div>`:''}
+      </div>
+      <div class="memories-section">
+        <div class="mem-header">
+          <div class="mem-title">📸 Memories${mems.length?` (${mems.length})`:''}</div>
+          <button class="mem-toggle" onclick="toggleMem('${p.id}')">${isMemOpen?'hide ↑':'show ↓'}</button>
+        </div>
+        ${isMemOpen?`<div class="mem-body">
+          <div class="media-upload-area">
+            <div style="font-size:1.3rem;margin-bottom:4px;">📷 🎥</div>
+            <div class="upload-hint">Tap to add photos or videos</div>
+            <div class="upload-count">Hold to select multiple at once</div>
+            <input type="file" accept="image/*,video/*" multiple onchange="handleMedia('${p.id}',this)" />
+          </div>
+          ${mediaGrid}
+        </div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+  updateCounter();
+}
+
+function toggleMem(id){memOpen[id]=!memOpen[id];renderPlaces(currentFilter);}
+function toggleVisited(id){
+  if(visited[id]){delete visited[id];}
+  else{const now=new Date();visited[id]=now.toLocaleDateString('en-KE',{day:'numeric',month:'short',year:'numeric'});}
+  renderPlaces(currentFilter);
+}
+function handleMedia(placeId,input){
+  const files=Array.from(input.files);
+  if(!memories[placeId])memories[placeId]=[];
+  let loaded=0;
+  files.forEach(file=>{
+    const reader=new FileReader(),type=file.type.startsWith('video')?'video':'image';
+    reader.onload=e=>{
+      memories[placeId].push({type,src:e.target.result});
+      loaded++;if(loaded===files.length)renderPlaces(currentFilter);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function deleteMedia(placeId,idx){if(memories[placeId])memories[placeId].splice(idx,1);renderPlaces(currentFilter);}
+function updateCounter(){
+  document.getElementById('visitedCount').textContent=Object.keys(visited).length;
+  document.getElementById('totalCount').textContent=places.length;
+}
+function filterPlaces(cat,btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');renderPlaces(cat);
+}
+
+// JOURNAL
+let journalEntries=[],currentRating=0,currentMood='';
+
+function rateStar(n){
+  currentRating=n;
+  document.querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('on',i<n));
+}
+function selectMood(btn){
+  document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  currentMood=btn.textContent.trim();
+}
+function saveEntry(){
+  const place=document.getElementById('jPlace').value.trim();
+  const text=document.getElementById('jText').value.trim();
+  if(!place||!text)return;
+  journalEntries.unshift({
+    id:Date.now(),
+    place,
+    date:document.getElementById('jDate').value||new Date().toISOString().split('T')[0],
+    rating:currentRating,
+    mood:currentMood,
+    text
+  });
+  document.getElementById('jPlace').value='';
+  document.getElementById('jText').value='';
+  document.getElementById('jDate').value=new Date().toISOString().split('T')[0];
+  currentRating=0;currentMood='';
+  document.querySelectorAll('.star').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('selected'));
+  renderJournal();
+}
+function deleteEntry(id){
+  journalEntries=journalEntries.filter(e=>e.id!==id);
+  renderJournal();
+}
+function renderJournal(){
+  document.getElementById('jTotal').textContent=journalEntries.length;
+  const rated=journalEntries.filter(e=>e.rating>0);
+  document.getElementById('jAvg').textContent=rated.length?(rated.reduce((s,e)=>s+e.rating,0)/rated.length).toFixed(1):'—';
+  const now=new Date();
+  document.getElementById('jMonth').textContent=journalEntries.filter(e=>{const d=new Date(e.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).length;
+  const list=document.getElementById('journalList');
+  if(!journalEntries.length){list.innerHTML=`<div class="empty-state"><div class="empty-icon">📓</div>No entries yet. Go on a date first!</div>`;return;}
+  list.innerHTML=journalEntries.map(e=>{
+    const filledStars='★'.repeat(e.rating);
+    const emptyStars='☆'.repeat(5-e.rating);
+    const dateStr=e.date?new Date(e.date+'T12:00:00').toLocaleDateString('en-KE',{weekday:'short',day:'numeric',month:'short',year:'numeric'}):'';
+    return `
+    <div class="j-entry">
+      <div class="j-top">
+        <div class="j-place">📍 ${e.place}</div>
+        <div class="j-date">${dateStr}</div>
+      </div>
+      ${e.rating?`<div class="j-stars">${filledStars}<span style="opacity:0.3;">${emptyStars}</span></div>`:''}
+      ${e.mood?`<div class="j-mood">${e.mood}</div>`:''}
+      <div class="j-body">${e.text}</div>
+      <div class="j-actions">
+        <button class="btn-ghost" onclick="deleteEntry(${e.id})" style="color:var(--danger);border-color:var(--danger);">Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Init
+document.getElementById('jDate').value=new Date().toISOString().split('T')[0];
+renderPlaces('all');
+renderJournal();
+</script>
+
+<script>
+// Register service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('SW registered:', reg.scope))
+      .catch(err => console.log('SW failed:', err));
+  });
+}
+</script>
+</body>
+</html>
